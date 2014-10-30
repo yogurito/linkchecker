@@ -222,6 +222,9 @@ class UrlBase (object):
         self.content_type = u""
         # URLs seen through redirections
         self.aliases = []
+        # times re-tried
+        self.retry_count = 3
+
 
     def set_result (self, msg, valid=True, overwrite=False):
         """
@@ -434,6 +437,11 @@ class UrlBase (object):
             trace.trace_on()
         try:
             self.local_check()
+            while(self.valid == False and self.retry_count > 0):
+                time.sleep(10)
+                self.retry_count -= 1
+                self.has_result = False
+                self.local_check()
         except (socket.error, select.error):
             # on Unix, ctrl-c can raise
             # error: (4, 'Interrupted system call')
